@@ -1,0 +1,86 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+
+	<code id="keys" style="display: block; width: 700px; font-size: 24px; line-height: 2; text-align: center; background: #dddddd; padding: 16px; margin: 100px auto;">Loading...</code>
+
+	<div style="display: none;">
+		<div id="qplayer"></div>
+	</div>
+
+	<script>
+		async function init() {
+			let html = await getResponseBody('https://get.u-stream.in/start/4c384192c35245c7d527bc9845673237/207b82052155f633aad84054f0821bee');
+			let fileUrl = html.match(/src="(.+uplayer.js)\?rnd=/);
+			fileUrl = `https://get.u-stream.in${fileUrl[1]}?rnd=${Math.random()}`;
+
+			let jsCode = await getResponseBody(fileUrl);
+			jsCode = unpackJsCode(jsCode);
+			injectKeys(jsCode);
+
+			new qp.cfg('qplayer', {
+				allow: window.location.host,
+				quality: 0,
+				noblock: false,
+				media: {
+					"title": "",
+					"hash": "4c384192c35245c7d527bc9845673237",
+					"id": "207b82052155f633aad84054f0821bee"
+				}
+			});
+
+			setTimeout(() => {
+				let message;
+				try {
+					message = getKeys().join('\r\n');
+					let url = getUrl();
+					message += `\r\nhttps://ustore.bz${url}XXX&id=XXX`;
+				} catch (e) {
+					message = e;
+				}
+				document.getElementById('keys').innerText = message;
+			}, 6000);
+		}
+		init();
+
+		async function getResponseBody(url) {
+			return await fetch(url, {
+			    "referrer": "https://4h0y.gitlab.io/",
+			    "method": "GET",
+			}).then(response => response.text()).then(data => data);
+		}
+
+		function unpackJsCode(code) {
+			if (code.startsWith('(function(p,a,c,k,e,r)')) {
+				code = code.replace('window.eval', 'window.unpacked = p;');
+				eval(code);
+				return unpacked;
+			}
+
+			return code;
+		}
+
+		function injectKeys(code) {
+			let search = ';return decodeURIComponent';
+			let position = code.indexOf(search);
+			let sample = code.slice(position - 700, position);
+			let varName = sample.match(/new RegExp\((\w+)/)[1];
+			// code = code.replace(search, `; window.getKeys=function(){return ${varName}}; ${search}`);
+
+
+			let url = code.match(/contentURL'?:(.+?),/)[1];
+
+
+
+			code = code.replace(search, `; window.getKeys=function(){return ${varName}}; window.getUrl=function(){return ${url}}; ${search}`);
+
+			eval(code)
+		}
+	</script>
+</body>
+</html>
+
