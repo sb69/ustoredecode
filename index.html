@@ -38,7 +38,7 @@
 				try {
 					message = getKeys().join('\r\n');
 					let url = getUrl();
-					message += `\r\nhttps://ustore.bz${url}XXX&id=XXX`;
+					message += `\r\nhttps://ustore.bz${url}$hash&id=$id`;
 				} catch (e) {
 					message = e;
 				}
