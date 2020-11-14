@@ -1,3 +1,4 @@
+
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -6,19 +7,37 @@
 </head>
 <body>
 
-	<code id="keys" style="display: block; width: 700px; font-size: 24px; line-height: 2; text-align: center; background: #dddddd; padding: 16px; margin: 100px auto;">Loading...</code>
+
+	<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; width: 700px; margin: 100px auto;">
+		<div style="width: 100%; margin-bottom: 16px;">
+			<a href="https://get.u-stream.in/player/uplayer.js?rnd=04" target="_blank">uplayer.js (1)</a>
+		</div>
+		<textarea type="text" id="jscode" placeholder="Вставьте код из файла uplayer.js" style="flex: 1; width: 400px; padding: 4px;"></textarea>
+		<button id="init">Загрузить</button>
+	</div>
+
+	<code id="keys" style="display: block; width: 700px; font-size: 24px; line-height: 2; text-align: center; background: #dddddd; padding: 16px; margin: 100px auto;">~</code>
 
 	<div style="display: none;">
 		<div id="qplayer"></div>
 	</div>
 
 	<script>
+		document.getElementById('init').addEventListener('click', e => {
+			init();
+		});
 		async function init() {
-			let html = await getResponseBody('https://get.u-stream.in/start/4c384192c35245c7d527bc9845673237/207b82052155f633aad84054f0821bee');
-			let fileUrl = html.match(/src="(.+uplayer.js)\?rnd=/);
-			fileUrl = `https://get.u-stream.in${fileUrl[1]}?rnd=${Math.random()}`;
+			document.getElementById('keys').innerText = 'Loading...';
 
-			let jsCode = await getResponseBody(fileUrl);
+			// let idArr = ['5e11decec63883ced914d547c995a623', 'c3cae332add85ca7a367122214373bdd', '8e0da4e3b13468b77db94200e919d0ba'];
+			// let id = idArr[Math.floor(Math.random() * idArr.length)];
+			// let html = await getResponseBody(`https://get.u-stream.in/start/4c384192c35245c7d527bc9845673237/${id}`);
+			// let fileUrl = html.match(/src="(.+uplayer.js)\?rnd=/);
+			// fileUrl = `https://get.u-stream.in${fileUrl[1]}?rnd=${Math.random()}`;
+
+			// let jsCode = await getResponseBody(fileUrl);
+			let jsCode = document.getElementById('jscode').value;
+
 			jsCode = unpackJsCode(jsCode);
 			injectKeys(jsCode);
 
@@ -29,7 +48,7 @@
 				media: {
 					"title": "",
 					"hash": "4c384192c35245c7d527bc9845673237",
-					"id": "207b82052155f633aad84054f0821bee"
+					"id": '57d2605483332b0d392e837c93583be7'
 				}
 			});
 
@@ -38,29 +57,37 @@
 				try {
 					message = getKeys().join('\r\n');
 					let url = getUrl();
-					message += `\r\nhttps://ustore.bz${url}$hash&id=$id`;
+					message += `\r\nhttps://ustore.bz${url}XXX&id=XXX`;
 				} catch (e) {
 					message = e;
 				}
 				document.getElementById('keys').innerText = message;
-			}, 6000);
+			}, 5000);
 		}
-		init();
+		// init();
 
 		async function getResponseBody(url) {
 			return await fetch(url, {
-			    "referrer": "https://4h0y.gitlab.io/",
-			    "method": "GET",
+			    "credentials": "include",
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.8,en-US;q=0.5,ru;q=0.3",
+        "Upgrade-Insecure-Requests": "1",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache"
+    },
+    "referrer": "https://4h0y.gitlab.io/",
+    "method": "GET",
+    "mode": "cors"
 			}).then(response => response.text()).then(data => data);
 		}
 
 		function unpackJsCode(code) {
 			if (code.startsWith('(function(p,a,c,k,e,r)')) {
-				code = code.replace('window.eval', 'window.unpacked = p;');
-				eval(code);
-				return unpacked;
+				code = code.replace('window.eval', 'return p;');
+				code = eval(code);
 			}
-
 			return code;
 		}
 
@@ -70,17 +97,10 @@
 			let sample = code.slice(position - 700, position);
 			let varName = sample.match(/new RegExp\((\w+)/)[1];
 			// code = code.replace(search, `; window.getKeys=function(){return ${varName}}; ${search}`);
-
-
 			let url = code.match(/contentURL'?:(.+?),/)[1];
-
-
-
 			code = code.replace(search, `; window.getKeys=function(){return ${varName}}; window.getUrl=function(){return ${url}}; ${search}`);
-
 			eval(code)
 		}
 	</script>
 </body>
 </html>
-
